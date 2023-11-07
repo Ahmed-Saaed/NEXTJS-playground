@@ -1,11 +1,14 @@
-import {useEffect, useState} from 'react';
+import {useContext, useEffect, useState} from 'react';
 
 import CommentList from './comment-list';
 import NewComment from './new-comment';
 import classes from './comments.module.css';
+import NotificationContext from '../../store/notification-context';
 
 function Comments(props) {
   const {eventId} = props;
+
+  const notificationCtx = useContext(NotificationContext);
 
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState([]);
@@ -26,7 +29,13 @@ function Comments(props) {
   }
 
   function addCommentHandler(commentData) {
-    fetch('/api/comments/' + eventId, {
+    notificationCtx.showNotification({
+      title: 'Signing up...',
+      message: 'adding your comment',
+      status: 'pending',
+    });
+
+    fetch('/api/commentss/' + eventId, {
       method: 'POST',
       body: JSON.stringify(commentData),
       headers: {
@@ -34,7 +43,20 @@ function Comments(props) {
       },
     })
       .then((response) => response.json())
-      .then((data) => console.log(data));
+      .then((data) => {
+        notificationCtx.showNotification({
+          title: 'Success',
+          message: 'our comment was saved',
+          status: 'success',
+        });
+      })
+      .catch((error) => {
+        notificationCtx.showNotification({
+          title: 'Error',
+          message: 'sth went wrong',
+          status: 'error',
+        });
+      });
   }
 
   return (
